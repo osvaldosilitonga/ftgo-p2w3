@@ -99,3 +99,23 @@ func (controller User) LoginUser(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func (controller User) GetProducts(c echo.Context) error {
+	products, err := repository.GetAllProduct(controller.DB)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return utils.ErrorMessage(c, &utils.ErrDataNotFound)
+	}
+	if err != nil {
+		return utils.ErrorMessage(c, &utils.ErrInternalServer)
+	}
+
+	// type ProductResponse struct {
+	// 	Code int `json:"code"`
+	// 	Message string `json:"message"`
+	// 	Data []entity.Products
+	// }
+
+	// response := []ProductResponse{}
+
+	return c.JSON(http.StatusOK, products)
+}
