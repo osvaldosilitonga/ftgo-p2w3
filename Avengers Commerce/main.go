@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"ngc11/config"
 	"ngc11/initializers"
 
 	"github.com/labstack/echo/v4"
@@ -9,10 +10,12 @@ import (
 
 func init() {
 	initializers.LoadEnvFile()
+
 }
 
 func main() {
 	app := echo.New()
+	db := config.InitDB()
 
 	v1 := app.Group("/v1")
 	v1.POST("/login", func(c echo.Context) error {
