@@ -36,9 +36,10 @@ func (handler Auth) RequiredAuth(next echo.HandlerFunc) echo.HandlerFunc {
 			return []byte(os.Getenv("JWT_TOKEN_SECRET")), nil
 		})
 		if err != nil {
-			return utils.ErrorMessage(c, &utils.ErrUnauthorized)
+			return utils.ErrorMessage(c, &utils.ErrInvalidToken)
 		}
 
+		// Token Claims
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			// Check the exp date
 			if float64(time.Now().Unix()) > claims["exp"].(float64) {
