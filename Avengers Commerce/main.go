@@ -12,11 +12,23 @@ func init() {
 }
 
 func main() {
-	e := echo.New()
+	app := echo.New()
 
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
+	v1 := app.Group("/v1")
+	v1.POST("/login", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Login")
+	})
+	v1.POST("/register", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Register")
 	})
 
-	e.Logger.Fatal(e.Start(":8080"))
+	user := v1.Group("/user")
+	user.GET("/products", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Products")
+	})
+	user.POST("/transactions", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Transaction")
+	})
+
+	app.Logger.Fatal(app.Start(":8080"))
 }

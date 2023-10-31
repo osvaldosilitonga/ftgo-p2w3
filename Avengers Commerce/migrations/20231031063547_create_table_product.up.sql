@@ -1,0 +1,6 @@
+CREATE TABLE products(
+  id SERIAL PRIMARY KEY,
+  name VARCHAR NOT NULL,
+  stock INT NOT NULL,
+  price INT NOT NULL
+);

@@ -1,0 +1,6 @@
+CREATE TABLE users (
+	id SERIAL PRIMARY KEY,
+	username VARCHAR NOT NULL UNIQUE,
+	password VARCHAR NOT NULL,
+	deposit_amount INT NOT NULL DEFAULT 0
+	);
