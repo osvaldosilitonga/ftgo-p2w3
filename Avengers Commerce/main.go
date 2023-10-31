@@ -5,6 +5,7 @@ import (
 	"ngc11/config"
 	"ngc11/controller"
 	"ngc11/initializers"
+	"ngc11/middleware"
 
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
@@ -32,6 +33,8 @@ func main() {
 
 	db := config.InitDB()
 
+	authMiddleware := middleware.NewAuthHandler(db)
+
 	userController := controller.NewUserController(db)
 
 	v1 := e.Group("/v1")
@@ -39,6 +42,7 @@ func main() {
 	v1.POST("/login", userController.LoginUser)
 
 	user := v1.Group("/user")
+	user.Use(authMiddleware.RequiredAuth)
 	user.GET("/products", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Products")
 	})

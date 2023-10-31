@@ -45,4 +45,20 @@ var (
 		Code:    http.StatusInternalServerError,
 		Message: "Failed when generate token",
 	}
+	ErrUnauthorized = APIError{
+		Code:    http.StatusUnauthorized,
+		Message: "Unauthorized",
+	}
+	ErrTokenAlg = APIError{
+		Code:    http.StatusUnauthorized,
+		Message: "Unexpected signing method",
+	}
+	ErrInvalidToken = APIError{
+		Code:    http.StatusUnauthorized,
+		Message: "Invalid Access Token",
+	}
+	ErrTokenExpired = APIError{
+		Code:    http.StatusUnauthorized,
+		Message: "Token expired",
+	}
 )
