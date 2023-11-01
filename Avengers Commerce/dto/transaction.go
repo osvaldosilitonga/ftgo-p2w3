@@ -18,5 +18,6 @@ type ErrTransactionResponse struct {
 
 type TransactionResponse struct {
 	Code     int               `json:"code"`
+	Message  string            `json:"message"`
 	Products []entity.Products `json:"products"`
 }

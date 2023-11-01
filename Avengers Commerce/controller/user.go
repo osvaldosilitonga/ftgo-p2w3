@@ -211,6 +211,7 @@ func (controller User) CreateTransaction(c echo.Context) error {
 
 	response := dto.TransactionResponse{
 		Code:     http.StatusOK,
+		Message:  "Transaction Success",
 		Products: products,
 	}
 

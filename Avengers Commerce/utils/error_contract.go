@@ -31,6 +31,10 @@ var (
 		Code:    http.StatusBadRequest,
 		Message: "Invalid Password",
 	}
+	ErrInvalidParamID = APIError{
+		Code:    http.StatusBadRequest,
+		Message: "Invalid Param ID",
+	}
 	ErrNotFound = APIError{
 		Code:    http.StatusNotFound,
 		Message: "Not Found",

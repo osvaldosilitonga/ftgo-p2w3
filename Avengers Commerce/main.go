@@ -36,6 +36,7 @@ func main() {
 	authMiddleware := middleware.NewAuthHandler(db)
 
 	userController := controller.NewUserController(db)
+	storeController := controller.NewStoreController(db)
 
 	v1 := e.Group("/v1")
 	v1.POST("/register", userController.RegisterUser)
@@ -45,6 +46,8 @@ func main() {
 	user.Use(authMiddleware.RequiredAuth)
 	user.GET("/products", userController.GetProducts)
 	user.POST("/transactions", userController.CreateTransaction)
+	user.GET("/stores", storeController.GetAllStore)
+	user.GET("/stores/:id", storeController.GetStoreDetailByID)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

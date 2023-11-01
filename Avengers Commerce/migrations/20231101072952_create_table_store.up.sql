@@ -1,0 +1,7 @@
+CREATE TABLE stores(
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(20) NOT NULL,
+  lat VARCHAR NOT NULL,
+  lon VARCHAR NOT NULL,
+  rating INT DEFAULT 0
+);
