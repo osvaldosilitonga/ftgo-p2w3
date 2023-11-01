@@ -109,13 +109,110 @@ func (controller User) GetProducts(c echo.Context) error {
 		return utils.ErrorMessage(c, &utils.ErrInternalServer)
 	}
 
-	// type ProductResponse struct {
-	// 	Code int `json:"code"`
-	// 	Message string `json:"message"`
-	// 	Data []entity.Products
-	// }
-
-	// response := []ProductResponse{}
-
 	return c.JSON(http.StatusOK, products)
+}
+
+func (controller User) CreateTransaction(c echo.Context) error {
+	body := dto.TransactionReq{}
+
+	c.Bind(&body)
+	if err := c.Validate(&body); err != nil {
+		return utils.ErrorMessage(c, &utils.ErrBadRequest)
+	}
+
+	// get username from header
+	username := c.Get("user").(string)
+
+	products := []entity.Products{}
+	totalAmmount := 0
+
+	// Start DB transaction
+	tx := controller.DB.Begin()
+
+	// get user data
+	user := entity.Users{}
+	if err := tx.Where("username = ?", username).First(&user).Error; err != nil {
+		tx.Rollback()
+		return utils.ErrorMessage(c, &utils.ErrInternalServer)
+	}
+
+	// get product data
+	for _, v := range body.Data {
+		p := entity.Products{}
+
+		// get product by id where product stock > order qty
+		if err := tx.Where("id = ? AND stock > ?", v.ProductID, v.Qty).First(&p).Error; err != nil {
+			tx.Rollback()
+
+			return c.JSON(http.StatusBadRequest, dto.ErrTransactionResponse{
+				Code:    http.StatusBadRequest,
+				Message: "Product out of stock",
+			})
+		}
+
+		p.Stock -= v.Qty
+		totalAmmount += p.Price * v.Qty
+		products = append(products, p)
+	}
+
+	// check if balance grater than total ammount
+	balance := user.DepositAmount - totalAmmount
+	if user.DepositAmount < totalAmmount || balance < 0 {
+		tx.Rollback()
+
+		return c.JSON(http.StatusBadRequest, dto.ErrTransactionResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Not enough balance",
+		})
+	}
+
+	// decreasing user balance
+	if err := tx.Model(&user).Update("deposit_amount", balance).Error; err != nil {
+		tx.Rollback()
+
+		return utils.ErrorMessage(c, &utils.ErrInternalServer)
+	}
+
+	// decreasing product stock
+	for _, v := range products {
+		if err := tx.Model(&entity.Products{}).Where("id = ?", v.ID).Update("stock", v.Stock).Error; err != nil {
+			tx.Rollback()
+
+			return utils.ErrorMessage(c, &utils.ErrInternalServer)
+		}
+	}
+
+	// add new transaction
+	transaction := entity.Transactions{
+		UsersID:     user.ID,
+		TotalAmount: totalAmmount,
+	}
+	if err := tx.Create(&transaction).Error; err != nil {
+		tx.Rollback()
+		return utils.ErrorMessage(c, &utils.ErrInternalServer)
+	}
+
+	// add new transaction_details
+	for _, v := range body.Data {
+		td := entity.TransactionDetails{}
+
+		td.TransactionsID = transaction.ID
+		td.ProductsID = uint(v.ProductID)
+		td.Qty = v.Qty
+
+		if err := tx.Create(&td).Error; err != nil {
+			tx.Rollback()
+			return utils.ErrorMessage(c, &utils.ErrInternalServer)
+		}
+	}
+
+	// Commit transaction
+	tx.Commit()
+
+	response := dto.TransactionResponse{
+		Code:     http.StatusOK,
+		Products: products,
+	}
+
+	return c.JSON(http.StatusOK, response)
 }

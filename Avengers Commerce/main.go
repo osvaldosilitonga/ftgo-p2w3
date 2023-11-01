@@ -44,9 +44,7 @@ func main() {
 	user := v1.Group("/user")
 	user.Use(authMiddleware.RequiredAuth)
 	user.GET("/products", userController.GetProducts)
-	user.POST("/transactions", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Transaction")
-	})
+	user.POST("/transactions", userController.CreateTransaction)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
